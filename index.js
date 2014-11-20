@@ -75,10 +75,10 @@ QuantifyTelemetryEvents.prototype.emit = function emit(event) {
 
 /*
   * `name`: _String_ Name of the metric to be used for `event.name` property.
-  * `unit`: _String_ Unit to be used for the metric `event.unit` property.
   * `c`: _Object_ Quantify calculated counter to process.
+  * Return: _Object_ The event.
 */
-QuantifyTelemetryEvents.prototype.counter = function counter(name, unit, c) {
+QuantifyTelemetryEvents.prototype.counter = function counter(name, c) {
     var self = this;
 
     var event = {
@@ -88,7 +88,7 @@ QuantifyTelemetryEvents.prototype.counter = function counter(name, unit, c) {
         version: self._package.version,
         name: name,
         value: c.value,
-        unit: unit,
+        unit: c.unit,
         target_type: 'counter'
     };
     if (c.metadata) {
@@ -104,10 +104,10 @@ QuantifyTelemetryEvents.prototype.counter = function counter(name, unit, c) {
 
 /*
   * `name`: _String_ Name of the metric to be used for `event.name` property.
-  * `unit`: _String_ Unit to be used for the metric `event.unit` property.
   * `g`: _Object_ Quantify calculated gauge to process.
+  * Return: _Object_ The event.
 */
-QuantifyTelemetryEvents.prototype.gauge = function gauge(name, unit, g) {
+QuantifyTelemetryEvents.prototype.gauge = function gauge(name, g) {
     var self = this;
 
     var event = {
@@ -117,7 +117,7 @@ QuantifyTelemetryEvents.prototype.gauge = function gauge(name, unit, g) {
         version: self._package.version,
         name: name,
         value: g.value,
-        unit: unit,
+        unit: g.unit,
         target_type: 'gauge'
     };
     if (g.metadata) {
@@ -133,17 +133,16 @@ QuantifyTelemetryEvents.prototype.gauge = function gauge(name, unit, g) {
 
 /*
   * `name`: _String_ Name of the metric to be used for `event.name` property.
-  * `measureUnit`: _String_ Unit to be used for the metric `event.value.measureUnit` property for all HISTOGRAM_MEASURE_FIELDS.
-  * `sampleSizeUnit`: _String_ Unit to be used for the metric `event.value.sampleSizeUnit` property for `size` field.
   * `h`: _Object_ Quantify calculated histogram to process.
+  * Return: _Object_ The event.
 */
-QuantifyTelemetryEvents.prototype.histogram = function histogram(name, measureUnit, sampleSizeUnit, h) {
+QuantifyTelemetryEvents.prototype.histogram = function histogram(name, h) {
     var self = this;
 
     var value = {
-        measureUnit: measureUnit,
+        measureUnit: h.measureUnit,
         sampleSize: h.sampleSize,
-        sampleSizeUnit: sampleSizeUnit
+        sampleSizeUnit: h.sampleSizeUnit
     };
     Quantify.HISTOGRAM_MEASURE_FIELDS.forEach(function (field) {
         value[field] = h[field];
@@ -170,17 +169,16 @@ QuantifyTelemetryEvents.prototype.histogram = function histogram(name, measureUn
 
 /*
   * `name`: _String_ Name of the metric to be used for `event.name` property.
-  * `rateUnit`: _String_ Unit to be used for the metric `event.value.rateUnit` property for all METER_RATE_FIELDS.
-  * `updateCountUnit`: _String_ Unit to be used for the metric `event.value.updateCountUnit` property for `count` field.
   * `m`: _Object_ Quantify calculated meter to process.
+  * Return: _Object_ The event.
 */
-QuantifyTelemetryEvents.prototype.meter = function meter(name, rateUnit, updateCountUnit, m) {
+QuantifyTelemetryEvents.prototype.meter = function meter(name, m) {
     var self = this;
 
     var value = {
-        rateUnit: rateUnit,
+        rateUnit: m.rateUnit,
         updateCount: m.updateCount,
-        updateCountUnit: updateCountUnit
+        updateCountUnit: m.updateCountUnit
     };
     Quantify.METER_RATE_FIELDS.forEach(function (field) {
         value[field] = m[field];
@@ -207,19 +205,17 @@ QuantifyTelemetryEvents.prototype.meter = function meter(name, rateUnit, updateC
 
 /*
   * `name`: _String_ Name of the metric to be used for `event.name` property.
-  * `measureUnit`: _String_ Unit to be used for the metric `event.value.measureUnit` property for all TIMER_MEASURE_FIELDS.
-  * `rateUnit`: _String_ Unit to be used for the metric `event.value.rateUnit` property for all TIMER_RATE_FIELDS.
-  * `sampleSizeUnit`: _String_ Unit to be used for the metric `event.value.sampleSizeUnit` property for `size` field.
   * `t`: _Object_ Quantify calculated timer to process.
+  * Return: _Object_ The event.
 */
-QuantifyTelemetryEvents.prototype.timer = function timer(name, measureUnit, rateUnit, sampleSizeUnit, t) {
+QuantifyTelemetryEvents.prototype.timer = function timer(name, t) {
     var self = this;
 
     var value = {
-        measureUnit: measureUnit,
-        rateUnit: rateUnit,
+        measureUnit: t.measureUnit,
+        rateUnit: t.rateUnit,
         sampleSize: t.sampleSize,
-        sampleSizeUnit: sampleSizeUnit,
+        sampleSizeUnit: t.sampleSizeUnit,
         updateCount: t.updateCount
     };
     Quantify.TIMER_RATE_FIELDS.forEach(function (field) {

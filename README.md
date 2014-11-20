@@ -45,34 +45,33 @@ emitter.on('telemetry', function (event) {
 });
 
 // create some metrics using Quantify
-metricsRegistry.counter('errors', {server: 'foo'});
-metricsRegistry.gauge('cpuLoad');
-metricsRegistry.histogram('searchResultsReturned');
-metricsRegistry.meter('requests');
-metricsRegistry.timer('requestLatency', {some: 'other_tag'});
+metricsRegistry.counter('errors', 'Err', {server: 'foo'});
+metricsRegistry.gauge('cpuLoad', 'Load');
+metricsRegistry.histogram('searchResultsReturned', {
+    measureUnit: 'Result',
+    sampleSizeUnit:  'Req'
+});
+metricsRegistry.meter('requests', {
+    rateUnit: 'Req/s',
+    updateCountUnit: 'Req'
+});
+metricsRegistry.timer('requestLatency', {
+    measureUnit: 'ms',
+    rateUnit: 'Req/s',
+    sampleSizeUnit: 'Req'
+}, {
+    some: 'other_tag',
+    and: 'more_metadata'
+});
 
 // get the metrics we want to report
 var metrics = metricsRegistry.getMetrics();
 
-telemetry.counter('errors',
-    'Err', // unit
-    metrics.counters['errors']);
-telemetry.gauge('cpuLoad',
-    'Load', // unit
-    metrics.gauges['cpuLoad']);
-telemetry.histogram('searchResultsReturned',
-    'ms', // measureUnit
-    'Req', // sampleSizeUnit
-    metrics.histograms['searchResultsReturned']);
-telemetry.meter('requests',
-    'Req/s', // rateUnit
-    'Req', // updateCountUnit
-    metrics.meters['requests']);
-telemetry.timer('requestLatency',
-    'ms', // measureUnit
-    'Req/s', // rateUnit
-    'Req', // sampleSizeUnit
-    metrics.timers['requestLatency']);
+telemetry.counter('errors', metrics.counters['errors']);
+telemetry.gauge('cpuLoad', metrics.gauges['cpuLoad']);
+telemetry.histogram('searchResultsReturned', metrics.histograms['searchResultsReturned']);
+telemetry.meter('requests', metrics.meters['requests']);
+telemetry.timer('requestLatency', metrics.timers['requestLatency']);
 
 ```
 
@@ -89,12 +88,12 @@ telemetry.timer('requestLatency',
 **Public API**
 
   * [new QuantifyTelemetryEvents(config)](#new-quantifytelemetryeventsconfig)
-  * [telemetry.counter(name, unit, c)](#telemetrycountername-unit-c)
+  * [telemetry.counter(name, c)](#telemetrycountername-c)
   * [telemetry.emit(event)](#telemetryemitevent)
-  * [telemetry.gauge(name, unit, g)](#telemetrygaugename-unit-g)
-  * [telemetry.histogram(name, measureUnit, sampleSizeUnit, h)](#telemetryhistogramname-measureunit-samplesizeunit-h)
-  * [telemetry.meter(name, rateUnit, updateCountUnit, m)](#telemetrymetername-rateunit-updatecountunit-m)
-  * [telemetry.timer(name, measureUnit, rateUnit, sampleSizeUnit, t)](#telemetrytimername-measureunit-rateunit-samplesizeunit-t)
+  * [telemetry.gauge(name, g)](#telemetrygaugename-g)
+  * [telemetry.histogram(name, h)](#telemetryhistogramname-h)
+  * [telemetry.meter(name, m)](#telemetrymetername-m)
+  * [telemetry.timer(name, t)](#telemetrytimername-t)
 
 ### new QuantifyTelemetryEvents(config)
 
@@ -107,7 +106,7 @@ telemetry.timer('requestLatency',
 
 Creates a new QuantifyTelemetryEvents instance.
 
-### telemetry.counter(name, unit, c)
+### telemetry.counter(name, c)
 
   * `name`: _String_ Name of the metric to be used for `event.name` property.
   * `unit`: _String_ Unit to be used for the metric `event.unit` property.
@@ -124,7 +123,7 @@ Helper to create "metric" event with 'target_type' of "counter". If `emitter` wa
     version: <package.version>,
     name: <name>,
     value: <c.value>,
-    unit: <unit>,
+    unit: <c.unit>,
     target_type: 'counter'
 }
 ```
@@ -139,7 +138,7 @@ Calling this method if `emitter` is not defined does nothing.
 
 When `emitter` is defined, calling this method will emit the `event` using `eventName`, if provided, or "telemetry" (by default).
 
-### telemetry.gauge(name, unit, g)
+### telemetry.gauge(name, g)
 
   * `name`: _String_ Name of the metric to be used for `event.name` property.
   * `unit`: _String_ Unit to be used for the metric `event.unit` property.
@@ -156,18 +155,16 @@ Helper to create "metric" event with 'target_type' of "gauge". If `emitter` was 
     version: <package.version>,
     name: <name>,
     value: <g.value>,
-    unit: <unit>,
+    unit: <g.unit>,
     target_type: 'gauge'
 }
 ```
 
 If `g` has `metadata`, properties of `metadata` will be included with or override the above template.
 
-### telemetry.histogram(name, measureUnit, sampleSizeUnit, h)
+### telemetry.histogram(name, h)
 
   * `name`: _String_ Name of the metric to be used for `event.name` property.
-  * `measureUnit`: _String_ Unit to be used for the metric `event.value.measureUnit` property for all HISTOGRAM_MEASURE_FIELDS.
-  * `sampleSizeUnit`: _String_ Unit to be used for the metric `event.value.sampleSizeUnit` property for `size` field.
   * `h`: _Object_ Quantify calculated histogram to process.
   * Return: _Object_ The event.
 
@@ -181,9 +178,9 @@ Helper to create "metric" event with 'target_type' of "histogram". If `emitter` 
     version: <package.version>,
     name: <name>,
     value: {
-        measureUnit: <measureUnit>,
+        measureUnit: <h.measureUnit>,
         sampleSize: <h.sampleSize>,
-        sampleSizeUnit: <sampleSizeUnit>,
+        sampleSizeUnit: <h.sampleSizeUnit>,
         max: <h.max>,
         mean: <h.mean>,
         median: <h.median>,
@@ -201,11 +198,9 @@ Helper to create "metric" event with 'target_type' of "histogram". If `emitter` 
 
 If `h` has `metadata`, properties of `metadata` will be included with or override the above template.
 
-### telemetry.meter(name, rateUnit, updateCountUnit, m)
+### telemetry.meter(name, m)
 
   * `name`: _String_ Name of the metric to be used for `event.name` property.
-  * `rateUnit`: _String_ Unit to be used for the metric `event.value.rateUnit` property for all METER_RATE_FIELDS.
-  * `updateCountUnit`: _String_ Unit to be used for the metric `event.value.updateCountUnit` property for `count` field.
   * `m`: _Object_ Quantify calculated meter to process.
   * Return: _Object_ The event.
 
@@ -219,9 +214,9 @@ Helper to create "metric" event with 'target_type' of "meter". If `emitter` was 
     version: <package.version>,
     name: <name>,
     value: {
-        rateUnit: <rateUnit>,
+        rateUnit: <m.rateUnit>,
         updateCount: <m.updateCount>,
-        updateCountUnit: <updateCountUnit>,
+        updateCountUnit: <m.updateCountUnit>,
         meanRate: <m.meanRate>,
         oneMinuteRate: <m.oneMinuteRate>,
         fiveMinuteRate: <m.fiveMinuteRate>,
@@ -233,12 +228,9 @@ Helper to create "metric" event with 'target_type' of "meter". If `emitter` was 
 
 If `m` has `metadata`, properties of `metadata` will be included with or override the above template.
 
-### telemetry.timer(name, measureUnit, rateUnit, sampleSizeUnit, t)
+### telemetry.timer(name, t)
 
   * `name`: _String_ Name of the metric to be used for `event.name` property.
-  * `measureUnit`: _String_ Unit to be used for the metric `event.value.measureUnit` property for all TIMER_MEASURE_FIELDS.
-  * `rateUnit`: _String_ Unit to be used for the metric `event.value.rateUnit` property for all TIMER_RATE_FIELDS.
-  * `sampleSizeUnit`: _String_ Unit to be used for the metric `event.value.sampleSizeUnit` property for `size` field.
   * `t`: _Object_ Quantify calculated timer to process.
   * Return: _Object_ The event.
 
@@ -252,10 +244,10 @@ Helper to create "metric" event with 'target_type' of "timer". If `emitter` was 
     version: <package.version>,
     name: <name>,
     value: {
-        measureUnit: <measureUnit>,
-        rateUnit: <rateUnit>,
+        measureUnit: <t.measureUnit>,
+        rateUnit: <t.rateUnit>,
         sampleSize: <t.sampleSize>,
-        sampleSizeUnit: <sampleSizeUnit>,
+        sampleSizeUnit: <t.sampleSizeUnit>,
         updateCount: <t.sampleSize>,
         meanRate: <t.meanRate>,
         oneMinuteRate: <t.oneMinuteRate>,

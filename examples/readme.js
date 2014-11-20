@@ -44,31 +44,30 @@ emitter.on('telemetry', function (event) {
 });
 
 // create some metrics using Quantify
-metricsRegistry.counter('errors', {server: 'foo'});
-metricsRegistry.gauge('cpuLoad');
-metricsRegistry.histogram('searchResultsReturned');
-metricsRegistry.meter('requests');
-metricsRegistry.timer('requestLatency', {some: 'other_tag'});
+metricsRegistry.counter('errors', 'Err', {server: 'foo'});
+metricsRegistry.gauge('cpuLoad', 'Load');
+metricsRegistry.histogram('searchResultsReturned', {
+    measureUnit: 'Result',
+    sampleSizeUnit:  'Req'
+});
+metricsRegistry.meter('requests', {
+    rateUnit: 'Req/s',
+    updateCountUnit: 'Req'
+});
+metricsRegistry.timer('requestLatency', {
+    measureUnit: 'ms',
+    rateUnit: 'Req/s',
+    sampleSizeUnit: 'Req'
+}, {
+    some: 'other_tag',
+    and: 'more_metadata'
+});
 
 // get the metrics we want to report
 var metrics = metricsRegistry.getMetrics();
 
-telemetry.counter('errors',
-    'Err', // unit
-    metrics.counters['errors']);
-telemetry.gauge('cpuLoad',
-    'Load', // unit
-    metrics.gauges['cpuLoad']);
-telemetry.histogram('searchResultsReturned',
-    'ms', // measureUnit
-    'Req', // sampleSizeUnit
-    metrics.histograms['searchResultsReturned']);
-telemetry.meter('requests',
-    'Req/s', // rateUnit
-    'Req', // updateCountUnit
-    metrics.meters['requests']);
-telemetry.timer('requestLatency',
-    'ms', // measureUnit
-    'Req/s', // rateUnit
-    'Req', // sampleSizeUnit
-    metrics.timers['requestLatency']);
+telemetry.counter('errors', metrics.counters['errors']);
+telemetry.gauge('cpuLoad', metrics.gauges['cpuLoad']);
+telemetry.histogram('searchResultsReturned', metrics.histograms['searchResultsReturned']);
+telemetry.meter('requests', metrics.meters['requests']);
+telemetry.timer('requestLatency', metrics.timers['requestLatency']);
