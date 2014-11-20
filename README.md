@@ -4,7 +4,7 @@ _Stability: 1 - [Experimental](https://github.com/tristanls/stability-index#stab
 
 [![NPM version](https://badge.fury.io/js/quantify-telemetry-events.png)](http://npmjs.org/package/quantify-telemetry-events)
 
-Helper for creating and emitting telemetry events.
+Helper for creating and emitting telemetry events for [Quantify](https://github.com/tristanls/quantify) metrics.
 
 ## Contributors
 
