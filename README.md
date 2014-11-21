@@ -73,6 +73,9 @@ telemetry.histogram('searchResultsReturned', metrics.histograms['searchResultsRe
 telemetry.meter('requests', metrics.meters['requests']);
 telemetry.timer('requestLatency', metrics.timers['requestLatency']);
 
+// ...or just call this
+telemetry.metrics(metrics);
+
 ```
 
 ## Tests
@@ -93,6 +96,7 @@ telemetry.timer('requestLatency', metrics.timers['requestLatency']);
   * [telemetry.gauge(name, g)](#telemetrygaugename-g)
   * [telemetry.histogram(name, h)](#telemetryhistogramname-h)
   * [telemetry.meter(name, m)](#telemetrymetername-m)
+  * [telemetry.metrics(metrics)](#telemetrymetricsmetrics) **USE THIS**
   * [telemetry.timer(name, t)](#telemetrytimername-t)
 
 ### new QuantifyTelemetryEvents(config)
@@ -227,6 +231,13 @@ Helper to create "metric" event with 'target_type' of "meter". If `emitter` was 
 ```
 
 If `m` has `metadata`, properties of `metadata` will be included with or override the above template.
+
+### telemetry.metrics(metrics)
+
+  * `metrics`: _Object_ Result of Quantify.getMetrics(\[filters\]).
+  * Return _Array_ Array of events.
+
+Helper to create "metric" events for all target types. If `emitter` was specified in configuration, calling this helper will also emit these events.
 
 ### telemetry.timer(name, t)
 

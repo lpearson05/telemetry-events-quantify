@@ -204,6 +204,23 @@ QuantifyTelemetryEvents.prototype.meter = function meter(name, m) {
 };
 
 /*
+  * `metrics`: _Object_ Result of Quantify.getMetrics(\[filters\]).
+  * Return _Array_ Array of events.
+*/
+QuantifyTelemetryEvents.prototype.metrics = function(metrics) {
+    var self = this;
+
+    var events = [];
+    Quantify.METRICS.forEach(function (targetType, i) {
+        Object.keys(metrics[targetType]).forEach(function (metricName) {
+            events.push(self[Quantify.METRIC_TYPES[i]](metricName, metrics[targetType][metricName]));
+        });
+    });
+
+    return events;
+}
+
+/*
   * `name`: _String_ Name of the metric to be used for `event.name` property.
   * `t`: _Object_ Quantify calculated timer to process.
   * Return: _Object_ The event.

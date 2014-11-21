@@ -71,3 +71,6 @@ telemetry.gauge('cpuLoad', metrics.gauges['cpuLoad']);
 telemetry.histogram('searchResultsReturned', metrics.histograms['searchResultsReturned']);
 telemetry.meter('requests', metrics.meters['requests']);
 telemetry.timer('requestLatency', metrics.timers['requestLatency']);
+
+// ...or just call this
+telemetry.metrics(metrics);
