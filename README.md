@@ -123,9 +123,9 @@ Helper to create "metric" event with 'target_type' of "counter". If `emitter` wa
 {
     type: 'metric',
     name: <name>,
-    value: <c.value>,
+    target_type: 'counter',
     unit: <c.unit>,
-    target_type: 'counter'
+    value: <c.value>
 }
 ```
 
@@ -144,9 +144,9 @@ Helper to create "metric" event with 'target_type' of "gauge". If `emitter` was 
 {
     type: 'metric',
     name: <name>,
-    value: <g.value>,
+    target_type: 'gauge',
     unit: <g.unit>,
-    target_type: 'gauge'
+    value: <g.value>
 }
 ```
 
@@ -164,6 +164,7 @@ Helper to create "metric" event with 'target_type' of "histogram". If `emitter` 
 {
     type: 'metric',
     name: <name>,
+    target_type: 'histogram',
     value: {
         measureUnit: <h.measureUnit>,
         sampleSize: <h.sampleSize>,
@@ -178,8 +179,7 @@ Helper to create "metric" event with 'target_type' of "histogram". If `emitter` 
         percentile99: <h.percentile99>,
         percentile999: <h.percentile999>,
         standardDeviation: <h.standardDeviation>
-    },
-    target_type: 'histogram'
+    }
 }
 ```
 
@@ -197,6 +197,7 @@ Helper to create "metric" event with 'target_type' of "meter". If `emitter` was 
 {
     type: 'metric',
     name: <name>,
+    target_type: 'meter',
     value: {
         rateUnit: <m.rateUnit>,
         updateCount: <m.updateCount>,
@@ -205,8 +206,7 @@ Helper to create "metric" event with 'target_type' of "meter". If `emitter` was 
         oneMinuteRate: <m.oneMinuteRate>,
         fiveMinuteRate: <m.fiveMinuteRate>,
         fifteenMinuteRate: <m.fifteenMinuteRate>
-    },
-    target_type: 'meter'
+    }
 }
 ```
 
@@ -231,6 +231,7 @@ Helper to create "metric" event with 'target_type' of "timer". If `emitter` was 
 {
     type: 'metric',
     name: <name>,
+    target_type: 'timer',
     value: {
         measureUnit: <t.measureUnit>,
         rateUnit: <t.rateUnit>,
@@ -251,8 +252,7 @@ Helper to create "metric" event with 'target_type' of "timer". If `emitter` was 
         percentile99: <t.percentile99>,
         percentile999: <t.percentile999>,
         standardDeviation: <t.standardDeviation>
-    },
-    target_type: 'timer'
+    }
 }
 ```
 

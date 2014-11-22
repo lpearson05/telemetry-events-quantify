@@ -64,9 +64,9 @@ QuantifyTelemetryEvents.prototype.counter = function counter(name, c) {
     var event = {
         type: 'metric',
         name: name,
-        value: c.value,
+        target_type: 'counter',
         unit: c.unit,
-        target_type: 'counter'
+        value: c.value
     };
     if (c.metadata) {
         Object.keys(c.metadata).forEach(function(key) {
@@ -88,9 +88,9 @@ QuantifyTelemetryEvents.prototype.gauge = function gauge(name, g) {
     var event = {
         type: 'metric',
         name: name,
-        value: g.value,
+        target_type: 'gauge',
         unit: g.unit,
-        target_type: 'gauge'
+        value: g.value
     };
     if (g.metadata) {
         Object.keys(g.metadata).forEach(function(key) {
