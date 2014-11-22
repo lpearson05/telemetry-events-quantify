@@ -34,8 +34,9 @@ OTHER DEALINGS IN THE SOFTWARE.
 var events = require('events');
 var Quantify = require('quantify');
 var QuantifyTelemetryEvents = require('../index.js');
+var VALID_CONFIG = require('./util/validConfig.js');
 
-var tests = module.exports = {};
+var telemetry = new QuantifyTelemetryEvents(VALID_CONFIG);
 
 var UNIT_MAP = {
     'counter': 'unit',
@@ -55,15 +56,11 @@ var UNIT_MAP = {
     }
 };
 
+var tests = module.exports = {};
+
 tests["should call individual metric methods"] = function (test) {
     test.expect(5);
     var metricsRegistry = new Quantify();
-    var telemetry = new QuantifyTelemetryEvents({
-        package: {
-            name: "package-name",
-            version: "package-version"
-        }
-    });
     Quantify.METRIC_TYPES.forEach(function (entry, i) {
         metricsRegistry[entry]("foo", UNIT_MAP[entry]);
     });
@@ -80,12 +77,6 @@ tests["should call individual metric methods"] = function (test) {
 tests["should call specified individual metric methods"] = function (test) {
     test.expect(4);
     var metricsRegistry = new Quantify();
-    var telemetry = new QuantifyTelemetryEvents({
-        package: {
-            name: "package-name",
-            version: "package-version"
-        }
-    });
     Quantify.METRIC_TYPES.forEach(function (entry, i) {
         if (entry == "gauge") {
             return;
@@ -105,12 +96,6 @@ tests["should call specified individual metric methods"] = function (test) {
 tests["should return array of events created by specified individual metric methods"] = function (test) {
     test.expect(7);
     var metricsRegistry = new Quantify();
-    var telemetry = new QuantifyTelemetryEvents({
-        package: {
-            name: "package-name",
-            version: "package-version"
-        }
-    });
     Quantify.METRIC_TYPES.forEach(function (entry, i) {
         if (entry == "gauge") {
             return;

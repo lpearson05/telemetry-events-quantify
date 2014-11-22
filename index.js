@@ -1,6 +1,6 @@
 /*
 
-index.js: quantify-telemetry-events
+index.js: telemetry-events-quantify
 
 The MIT License (MIT)
 
@@ -35,12 +35,12 @@ var Quantify = require('quantify');
 
 module.exports = QuantifyTelemetryEvents;
 
+var REQUIRED_CONFIG_PROPERTIES = ["telemetry"];
+
 /*
   * `config`: _Object_
     * `telemetry`: _TelemetryEvents_ Instance of TelemetryEvents to use for processing.
 */
-var REQUIRED_CONFIG_PROPERTIES = ["package"];
-
 function QuantifyTelemetryEvents(config) {
     var self = this;
 
@@ -51,26 +51,6 @@ function QuantifyTelemetryEvents(config) {
             throw new Error("config is missing required property: " + property);
         }
     });
-
-    self._emitter = config.emitter;
-    if (self._emitter) {
-        self._eventName = config.eventName || "telemetry";
-    } else {
-        if (config.eventName) {
-            throw new Error("'eventName' property specified in 'config' without corresponding 'emitter' property");
-        }
-    }
-};
-
-/*
-  * `event`: _Object_ Event to be emitted.
-*/
-QuantifyTelemetryEvents.prototype.emit = function emit(event) {
-    var self = this;
-
-    if (self._emitter) {
-        self._emitter.emit(self._eventName, event);
-    }
 };
 
 /*
@@ -83,9 +63,6 @@ QuantifyTelemetryEvents.prototype.counter = function counter(name, c) {
 
     var event = {
         type: 'metric',
-        timestamp: new Date().toISOString(),
-        module: self._package.name,
-        version: self._package.version,
         name: name,
         value: c.value,
         unit: c.unit,
@@ -97,9 +74,7 @@ QuantifyTelemetryEvents.prototype.counter = function counter(name, c) {
         });
     }
 
-    self.emit(event);
-
-    return event;
+    return self._telemetry.emit(event);
 };
 
 /*
@@ -112,9 +87,6 @@ QuantifyTelemetryEvents.prototype.gauge = function gauge(name, g) {
 
     var event = {
         type: 'metric',
-        timestamp: new Date().toISOString(),
-        module: self._package.name,
-        version: self._package.version,
         name: name,
         value: g.value,
         unit: g.unit,
@@ -126,9 +98,7 @@ QuantifyTelemetryEvents.prototype.gauge = function gauge(name, g) {
         });
     }
 
-    self.emit(event);
-
-    return event;
+    return self._telemetry.emit(event);
 };
 
 /*
@@ -149,9 +119,6 @@ QuantifyTelemetryEvents.prototype.histogram = function histogram(name, h) {
     });
     var event = {
         type: 'metric',
-        timestamp: new Date().toISOString(),
-        module: self._package.name,
-        version: self._package.version,
         name: name,
         target_type: 'histogram',
         value: value
@@ -162,9 +129,7 @@ QuantifyTelemetryEvents.prototype.histogram = function histogram(name, h) {
         });
     }
 
-    self.emit(event);
-
-    return event;
+    return self._telemetry.emit(event);
 };
 
 /*
@@ -185,9 +150,6 @@ QuantifyTelemetryEvents.prototype.meter = function meter(name, m) {
     });
     var event = {
         type: 'metric',
-        timestamp: new Date().toISOString(),
-        module: self._package.name,
-        version: self._package.version,
         name: name,
         target_type: 'meter',
         value: value
@@ -198,9 +160,7 @@ QuantifyTelemetryEvents.prototype.meter = function meter(name, m) {
         });
     }
 
-    self.emit(event);
-
-    return event;
+    return self._telemetry.emit(event);
 };
 
 /*
@@ -243,9 +203,6 @@ QuantifyTelemetryEvents.prototype.timer = function timer(name, t) {
     });
     var event = {
         type: 'metric',
-        timestamp: new Date().toISOString(),
-        module: self._package.name,
-        version: self._package.version,
         name: name,
         target_type: 'timer',
         value: value
@@ -256,7 +213,5 @@ QuantifyTelemetryEvents.prototype.timer = function timer(name, t) {
         });
     }
 
-    self.emit(event);
-
-    return event;
+    return self._telemetry.emit(event);
 };

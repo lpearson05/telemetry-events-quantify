@@ -34,17 +34,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 var events = require('events');
 var QuantifyTelemetryEvents = require('../index.js');
 var Quantify = require('quantify');
-
-var tests = module.exports = {};
-
-var VALID_CONFIG = {
-    emitter: new events.EventEmitter(),
-    event: 'my-telemetry',
-    package: {
-        name: "package-name",
-        version: "package-version"
-    }
-};
+var VALID_CONFIG = require('./util/validConfig.js');
 
 function assertEqual(test, thingy, actualValueOfThingy, expectedValueOfThingy) {
     test.equal(actualValueOfThingy, expectedValueOfThingy, "expected value for " + thingy + " was '" + expectedValueOfThingy + "' but received '" + actualValueOfThingy + "'");
@@ -58,28 +48,21 @@ function assertBaseCounterEvent(test, event, overrides) {
     if (!('name' in overrides)) {
         assertEqual(test, "event.name", event.name, "some_name");
     }
+    if (!('target_type' in overrides)) {
+       assertEqual(test, "event.target_type", event.target_type, 'counter');
+    }
     if (!('value' in overrides)) {
         assertEqual(test, "event.value", event.value, 0);
     }
     if (!('unit' in overrides)) {
         assertEqual(test, "event.unit", event.unit, "some_unit");
     }
-    if (!('timestamp' in overrides)) {
-        test.ok(event.timestamp, "Missing event.timestamp");
-    }
-    if (!('module' in overrides)) {
-        assertEqual(test, "event.module", event.module, VALID_CONFIG.package.name);
-    }
-    if (!('version' in overrides)) {
-        assertEqual(test, "event.version", event.version, VALID_CONFIG.package.version);
-    }
-    if (!('target_type' in overrides)) {
-       assertEqual(test, "event.target_type", event.target_type, 'counter');
-    }
 }
 
+var tests = module.exports = {};
+
 tests['returns counter event'] = function(test) {
-    test.expect(8);
+    test.expect(5);
     var telemetry = new QuantifyTelemetryEvents(VALID_CONFIG);
     var metricsRegistry = new Quantify();
     metricsRegistry.counter("foo", "some_unit");
@@ -91,7 +74,7 @@ tests['returns counter event'] = function(test) {
 };
 
 tests['returns counter event with metadata'] = function(test) {
-    test.expect(9);
+    test.expect(6);
     var telemetry = new QuantifyTelemetryEvents(VALID_CONFIG);
     var metricsRegistry = new Quantify();
     var metadata = {some_tag: "some_tag"};
@@ -105,36 +88,30 @@ tests['returns counter event with metadata'] = function(test) {
 };
 
 tests['returns counter event with metadata containing overrides (for default event properties)'] = function(test) {
-    test.expect(8);
+    test.expect(5);
     var telemetry = new QuantifyTelemetryEvents(VALID_CONFIG);
     var metricsRegistry = new Quantify();
-    var metadata = {version: "v0.0.0"};
+    var metadata = {type: "blah"};
     metricsRegistry.counter("foo", "some_unit", metadata);
     var data = metricsRegistry.getMetrics();
     var counter = data.counters.foo;
     var event = telemetry.counter("some_name", counter);
     assertBaseCounterEvent(test, event, metadata);
-    assertEqual(test, "event.version", event.version, metadata.version);
+    assertEqual(test, "event.type", event.type, metadata.type);
     test.done();
 };
 
-tests["should call emit() to emit event"] = function(test) {
+tests["should call _telemetry.emit() to emit event"] = function(test) {
     test.expect(1);
-    var emitter = new events.EventEmitter();
-    emitter.emit = function() {
-        test.ok(false, "emitter.emit() should not have been called directly");
-    }
+    var emittedEvent;
     var telemetry = new QuantifyTelemetryEvents({
-            emitter: emitter,
-            package: {
-                name: "package-name",
-                version: "package-version"
+            telemetry: {
+                emit: function (event) {
+                    emittedEvent = event;
+                    return emittedEvent;
+                }
             }
         });
-    var emittedEvent;
-    telemetry.emit = function (event) {
-        emittedEvent = event;
-    };
     var metricsRegistry = new Quantify();
     metricsRegistry.counter("foo", "some_unit");
     var data = metricsRegistry.getMetrics();

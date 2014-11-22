@@ -34,17 +34,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 var events = require('events');
 var QuantifyTelemetryEvents = require('../index.js');
 var Quantify = require('quantify');
-
-var tests = module.exports = {};
-
-var VALID_CONFIG = {
-    emitter: new events.EventEmitter(),
-    event: 'my-telemetry',
-    package: {
-        name: "package-name",
-        version: "package-version"
-    }
-};
+var VALID_CONFIG = require('./util/validConfig.js');
 
 function assertEqual(test, thingy, actualValueOfThingy, expectedValueOfThingy) {
     test.equal(actualValueOfThingy, expectedValueOfThingy, "expected value for " + thingy + " was '" + expectedValueOfThingy + "' but received '" + actualValueOfThingy + "'");
@@ -58,6 +48,9 @@ function assertBaseHistogramEvent(test, event, overrides) {
     if (!('name' in overrides)) {
         assertEqual(test, "event.name", event.name, "some_name");
     }
+    if (!('target_type' in overrides)) {
+       assertEqual(test, "event.target_type", event.target_type, 'histogram');
+    }
     if (!('value' in overrides)) {
         Quantify.HISTOGRAM_MEASURE_FIELDS.forEach(function(field) {
             assertEqual(test, "event.value." + field, event.value[field], 0);
@@ -66,22 +59,12 @@ function assertBaseHistogramEvent(test, event, overrides) {
         assertEqual(test, "event.value.sampleSize", event.value.sampleSize, 0);
         assertEqual(test, "event.value.sampleSizeUnit", event.value.sampleSizeUnit, "some_sampleSizeUnit");
     }
-    if (!('timestamp' in overrides)) {
-        test.ok(event.timestamp, "Missing event.timestamp");
-    }
-    if (!('module' in overrides)) {
-        assertEqual(test, "event.module", event.module, VALID_CONFIG.package.name);
-    }
-    if (!('version' in overrides)) {
-        assertEqual(test, "event.version", event.version, VALID_CONFIG.package.version);
-    }
-    if (!('target_type' in overrides)) {
-       assertEqual(test, "event.target_type", event.target_type, 'histogram');
-    }
 }
 
+var tests = module.exports = {};
+
 tests['returns histogram event'] = function(test) {
-    test.expect(19);
+    test.expect(16);
     var telemetry = new QuantifyTelemetryEvents(VALID_CONFIG);
     var metricsRegistry = new Quantify();
     metricsRegistry.histogram("foo", {measureUnit: "some_measureUnit", sampleSizeUnit: "some_sampleSizeUnit"});
@@ -93,7 +76,7 @@ tests['returns histogram event'] = function(test) {
 };
 
 tests['returns histogram event with metadata'] = function(test) {
-    test.expect(20);
+    test.expect(17);
     var telemetry = new QuantifyTelemetryEvents(VALID_CONFIG);
     var metricsRegistry = new Quantify();
     var metadata = {some_tag: "some_tag"};
@@ -107,36 +90,30 @@ tests['returns histogram event with metadata'] = function(test) {
 };
 
 tests['returns histogram event with metadata containing overrides (for default event properties)'] = function(test) {
-    test.expect(19);
+    test.expect(16);
     var telemetry = new QuantifyTelemetryEvents(VALID_CONFIG);
     var metricsRegistry = new Quantify();
-    var metadata = {version: "v0.0.0"};
+    var metadata = {type: "blah"};
     metricsRegistry.histogram("foo", {measureUnit: "some_measureUnit", sampleSizeUnit: "some_sampleSizeUnit"}, metadata);
     var data = metricsRegistry.getMetrics();
     var histogram = data.histograms.foo;
     var event = telemetry.histogram("some_name", histogram);
     assertBaseHistogramEvent(test, event, metadata);
-    assertEqual(test, "event.version", event.version, metadata.version);
+    assertEqual(test, "event.type", event.type, metadata.type);
     test.done();
 };
 
-tests["should call emit() to emit event"] = function(test) {
+tests["should call _telemetry.emit() to emit event"] = function(test) {
     test.expect(1);
-    var emitter = new events.EventEmitter();
-    emitter.emit = function() {
-        test.ok(false, "emitter.emit() should not have been called directly");
-    }
+    var emittedEvent;
     var telemetry = new QuantifyTelemetryEvents({
-            emitter: emitter,
-            package: {
-                name: "package-name",
-                version: "package-version"
+            telemetry: {
+                emit: function (event) {
+                    emittedEvent = event;
+                    return emittedEvent;
+                }
             }
         });
-    var emittedEvent;
-    telemetry.emit = function (event) {
-        emittedEvent = event;
-    };
     var metricsRegistry = new Quantify();
     metricsRegistry.histogram("foo", {measureUnit: "some_measureUnit", sampleSizeUnit: "some_sampleSizeUnit"});
     var data = metricsRegistry.getMetrics();

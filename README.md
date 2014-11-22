@@ -1,10 +1,13 @@
-# quantify-telemetry-events
+# telemetry-events-quantify
 
 _Stability: 1 - [Experimental](https://github.com/tristanls/stability-index#stability-1---experimental)_
 
-[![NPM version](https://badge.fury.io/js/quantify-telemetry-events.png)](http://npmjs.org/package/quantify-telemetry-events)
+[![NPM version](https://badge.fury.io/js/telemetry-events-quantify.png)](http://npmjs.org/package/telemetry-events-quantify)
 
-Helper for creating and emitting telemetry events for [Quantify](https://github.com/tristanls/quantify) metrics.
+Helper for creating and emitting [telemetry events][te-link] for [Quantify][2] metrics.
+
+[te-link]: https://github.com/tristanls/telemetry-events
+[2]: https://github.com/tristanls/quantify
 
 ## Contributors
 
@@ -20,7 +23,7 @@ Helper for creating and emitting telemetry events for [Quantify](https://github.
 
 ## Installation
 
-    npm install quantify-telemetry-events
+    npm install telemetry-events-quantify
 
 ## Usage
 
@@ -35,10 +38,12 @@ var events = require('events');
 var pkg = require('../package.json');
 var Quantify = require('quantify');
 var QuantifyTelemetryEvents = require('../index.js');
+var TelemetryEvents = require('telemetry-events');
 
 var emitter = new events.EventEmitter();
 var metricsRegistry = new Quantify();
-var telemetry = new QuantifyTelemetryEvents({emitter: emitter, package: pkg});
+var telemetryEvents = new TelemetryEvents({emitter: emitter, package: pkg});
+var quantifyTelemetryEmitter = new QuantifyTelemetryEvents({telemetry: telemetryEvents});
 
 emitter.on('telemetry', function (event) {
     console.dir(event);
@@ -67,14 +72,14 @@ metricsRegistry.timer('requestLatency', {
 // get the metrics we want to report
 var metrics = metricsRegistry.getMetrics();
 
-telemetry.counter('errors', metrics.counters['errors']);
-telemetry.gauge('cpuLoad', metrics.gauges['cpuLoad']);
-telemetry.histogram('searchResultsReturned', metrics.histograms['searchResultsReturned']);
-telemetry.meter('requests', metrics.meters['requests']);
-telemetry.timer('requestLatency', metrics.timers['requestLatency']);
+quantifyTelemetryEmitter.counter('errors', metrics.counters['errors']);
+quantifyTelemetryEmitter.gauge('cpuLoad', metrics.gauges['cpuLoad']);
+quantifyTelemetryEmitter.histogram('searchResultsReturned', metrics.histograms['searchResultsReturned']);
+quantifyTelemetryEmitter.meter('requests', metrics.meters['requests']);
+quantifyTelemetryEmitter.timer('requestLatency', metrics.timers['requestLatency']);
 
 // ...or just call this
-telemetry.metrics(metrics);
+quantifyTelemetryEmitter.metrics(metrics);
 
 ```
 
@@ -92,7 +97,6 @@ telemetry.metrics(metrics);
 
   * [new QuantifyTelemetryEvents(config)](#new-quantifytelemetryeventsconfig)
   * [telemetry.counter(name, c)](#telemetrycountername-c)
-  * [telemetry.emit(event)](#telemetryemitevent)
   * [telemetry.gauge(name, g)](#telemetrygaugename-g)
   * [telemetry.histogram(name, h)](#telemetryhistogramname-h)
   * [telemetry.meter(name, m)](#telemetrymetername-m)
@@ -102,11 +106,7 @@ telemetry.metrics(metrics);
 ### new QuantifyTelemetryEvents(config)
 
   * `config`: _Object_
-    * `package`: _Object_ Contents of `package.json`.
-      * `name`: _String_ Module name.
-      * `version`: _String_ Module version.
-    * `emitter`: _EventEmitter_ _(Default: undefined)_ An optional event emitter to emit events when `log()` is called.
-    * `eventName`: _String_ _(Default: 'telemetry')_ An optional event name used for event emission if `emitter` is specified.
+    * `telemetry`: _TelemetryEvents_ Instance of TelemetryEvents to use for processing.
 
 Creates a new QuantifyTelemetryEvents instance.
 
@@ -117,14 +117,11 @@ Creates a new QuantifyTelemetryEvents instance.
   * `c`: _Object_ Quantify calculated counter to process.
   * Return: _Object_ The event.
 
-Helper to create "metric" event with 'target_type' of "counter". If `emitter` was specified in configuration, calling this helper will also emit this event. The created event object will have the following properties:
+Helper to create "metric" event with 'target_type' of "counter". If `emitter` was specified in configuration, calling this helper will also emit this event. The created event object will have the following properties (in addition to those added by [TelemeteryEvents][te-link]):
 
 ```javascript
 {
     type: 'metric',
-    timestamp: new Date().toISOString(),
-    module: <package.name>,
-    version: <package.version>,
     name: <name>,
     value: <c.value>,
     unit: <c.unit>,
@@ -134,14 +131,6 @@ Helper to create "metric" event with 'target_type' of "counter". If `emitter` wa
 
 If `c` has `metadata`, properties of `metadata` will be included with or override the above template.
 
-### telemetry.emit(event)
-
-  * `event`: _Object_ Event to be emitted.
-
-Calling this method if `emitter` is not defined does nothing.
-
-When `emitter` is defined, calling this method will emit the `event` using `eventName`, if provided, or "telemetry" (by default).
-
 ### telemetry.gauge(name, g)
 
   * `name`: _String_ Name of the metric to be used for `event.name` property.
@@ -149,14 +138,11 @@ When `emitter` is defined, calling this method will emit the `event` using `even
   * `g`: _Object_ Quantify calculated gauge to process.
   * Return: _Object_ The event.
 
-Helper to create "metric" event with 'target_type' of "gauge". If `emitter` was specified in configuration, calling this helper will also emit this event. The created event object will have the following properties:
+Helper to create "metric" event with 'target_type' of "gauge". If `emitter` was specified in configuration, calling this helper will also emit this event. The created event object will have the following properties (in addition to those added by [TelemeteryEvents][te-link]):
 
 ```javascript
 {
     type: 'metric',
-    timestamp: new Date().toISOString(),
-    module: <package.name>,
-    version: <package.version>,
     name: <name>,
     value: <g.value>,
     unit: <g.unit>,
@@ -172,14 +158,11 @@ If `g` has `metadata`, properties of `metadata` will be included with or overrid
   * `h`: _Object_ Quantify calculated histogram to process.
   * Return: _Object_ The event.
 
-Helper to create "metric" event with 'target_type' of "histogram". If `emitter` was specified in configuration, calling this helper will also emit this event. The created event object will have the following properties:
+Helper to create "metric" event with 'target_type' of "histogram". If `emitter` was specified in configuration, calling this helper will also emit this event. The created event object will have the following properties (in addition to those added by [TelemeteryEvents][te-link]):
 
 ```javascript
 {
     type: 'metric',
-    timestamp: new Date().toISOString(),
-    module: <package.name>,
-    version: <package.version>,
     name: <name>,
     value: {
         measureUnit: <h.measureUnit>,
@@ -208,14 +191,11 @@ If `h` has `metadata`, properties of `metadata` will be included with or overrid
   * `m`: _Object_ Quantify calculated meter to process.
   * Return: _Object_ The event.
 
-Helper to create "metric" event with 'target_type' of "meter". If `emitter` was specified in configuration, calling this helper will also emit this event. The created event object will have the following properties:
+Helper to create "metric" event with 'target_type' of "meter". If `emitter` was specified in configuration, calling this helper will also emit this event. The created event object will have the following properties (in addition to those added by [TelemeteryEvents][te-link]):
 
 ```javascript
 {
     type: 'metric',
-    timestamp: new Date().toISOString(),
-    module: <package.name>,
-    version: <package.version>,
     name: <name>,
     value: {
         rateUnit: <m.rateUnit>,
@@ -245,14 +225,11 @@ Helper to create "metric" events for all target types. If `emitter` was specifie
   * `t`: _Object_ Quantify calculated timer to process.
   * Return: _Object_ The event.
 
-Helper to create "metric" event with 'target_type' of "timer". If `emitter` was specified in configuration, calling this helper will also emit this event. The created event object will have the following properties:
+Helper to create "metric" event with 'target_type' of "timer". If `emitter` was specified in configuration, calling this helper will also emit this event. The created event object will have the following properties (in addition to those added by [TelemeteryEvents][te-link]):
 
 ```javascript
 {
     type: 'metric',
-    timestamp: new Date().toISOString(),
-    module: <package.name>,
-    version: <package.version>,
     name: <name>,
     value: {
         measureUnit: <t.measureUnit>,

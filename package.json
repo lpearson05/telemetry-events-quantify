@@ -1,6 +1,6 @@
 {
-  "name": "quantify-telemetry-events",
-  "version": "0.3.0",
+  "name": "telemetry-events-quantify",
+  "version": "0.0.0",
   "description": "Helper for creating telemetry events from Quantify metrics.",
   "scripts": {
     "inject-examples": "node scripts/injectExamples.js",
@@ -12,11 +12,12 @@
     "nodeunit": "0.9.x"
   },
   "dependencies": {
-    "quantify": "0.7.2"
+    "quantify": "0.7.2",
+    "telemetry-events": "0.5.0"
   },
   "repository": {
     "type": "git",
-    "url": "git@github.com:lpearson05/quantify-telemetry-events.git"
+    "url": "git@github.com:lpearson05/telemetry-events-quantify.git"
   },
   "keywords": [
     "telemetry",

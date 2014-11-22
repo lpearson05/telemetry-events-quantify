@@ -31,29 +31,10 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 "use strict";
 
-var events = require('events');
-var QuantifyTelemetryEvents = require('../index.js');
-var VALID_CONFIG = require('./util/validConfig.js');
-
-var REQUIRED_CONFIG_PROPERTIES = ["telemetry"];
-
-var tests = module.exports = {};
-
-tests['instantiates with valid config'] = function (test) {
-    test.expect(1);
-    var telemetry = new QuantifyTelemetryEvents(VALID_CONFIG);
-    test.ok(telemetry instanceof QuantifyTelemetryEvents, "telemetry should be instance of QuantifyTelemetryEvents");
-    test.done();
+module.exports = {
+    telemetry: {
+        emit: function(event) {
+            return event;
+        }
+    }
 };
-
-REQUIRED_CONFIG_PROPERTIES.forEach(function(property) {
-    tests["throws error if config is missing property: " + property] = function(test) {
-        test.expect(1);
-        test.throws(function() {
-            var config = JSON.parse(JSON.stringify(VALID_CONFIG))
-            delete config[property];
-            new QuantifyTelemetryEvents(config);
-        });
-        test.done();
-    };
-});

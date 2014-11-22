@@ -34,10 +34,12 @@ var events = require('events');
 var pkg = require('../package.json');
 var Quantify = require('quantify');
 var QuantifyTelemetryEvents = require('../index.js');
+var TelemetryEvents = require('telemetry-events');
 
 var emitter = new events.EventEmitter();
 var metricsRegistry = new Quantify();
-var telemetry = new QuantifyTelemetryEvents({emitter: emitter, package: pkg});
+var telemetryEvents = new TelemetryEvents({emitter: emitter, package: pkg});
+var quantifyTelemetryEmitter = new QuantifyTelemetryEvents({telemetry: telemetryEvents});
 
 emitter.on('telemetry', function (event) {
     console.dir(event);
@@ -66,11 +68,11 @@ metricsRegistry.timer('requestLatency', {
 // get the metrics we want to report
 var metrics = metricsRegistry.getMetrics();
 
-telemetry.counter('errors', metrics.counters['errors']);
-telemetry.gauge('cpuLoad', metrics.gauges['cpuLoad']);
-telemetry.histogram('searchResultsReturned', metrics.histograms['searchResultsReturned']);
-telemetry.meter('requests', metrics.meters['requests']);
-telemetry.timer('requestLatency', metrics.timers['requestLatency']);
+quantifyTelemetryEmitter.counter('errors', metrics.counters['errors']);
+quantifyTelemetryEmitter.gauge('cpuLoad', metrics.gauges['cpuLoad']);
+quantifyTelemetryEmitter.histogram('searchResultsReturned', metrics.histograms['searchResultsReturned']);
+quantifyTelemetryEmitter.meter('requests', metrics.meters['requests']);
+quantifyTelemetryEmitter.timer('requestLatency', metrics.timers['requestLatency']);
 
 // ...or just call this
-telemetry.metrics(metrics);
+quantifyTelemetryEmitter.metrics(metrics);

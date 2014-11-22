@@ -34,17 +34,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 var events = require('events');
 var QuantifyTelemetryEvents = require('../index.js');
 var Quantify = require('quantify');
-
-var tests = module.exports = {};
-
-var VALID_CONFIG = {
-    emitter: new events.EventEmitter(),
-    event: 'my-telemetry',
-    package: {
-        name: "package-name",
-        version: "package-version"
-    }
-};
+var VALID_CONFIG = require('./util/validConfig.js');
 
 function assertEqual(test, thingy, actualValueOfThingy, expectedValueOfThingy) {
     test.equal(actualValueOfThingy, expectedValueOfThingy, "expected value for " + thingy + " was '" + expectedValueOfThingy + "' but received '" + actualValueOfThingy + "'");
@@ -57,6 +47,9 @@ function assertBasetimerEvent(test, event, overrides) {
     }
     if (!('name' in overrides)) {
         assertEqual(test, "event.name", event.name, "some_name");
+    }
+    if (!('target_type' in overrides)) {
+       assertEqual(test, "event.target_type", event.target_type, 'timer');
     }
     if (!('value' in overrides)) {
         Quantify.TIMER_RATE_FIELDS.forEach(function(field) {
@@ -71,22 +64,12 @@ function assertBasetimerEvent(test, event, overrides) {
         assertEqual(test, "event.value.sampleSizeUnit", event.value.sampleSizeUnit, "some_sampleSizeUnit");
         assertEqual(test, "event.value.updateCount", event.value.updateCount, 0);
     }
-    if (!('timestamp' in overrides)) {
-        test.ok(event.timestamp, "Missing event.timestamp");
-    }
-    if (!('module' in overrides)) {
-        assertEqual(test, "event.module", event.module, VALID_CONFIG.package.name);
-    }
-    if (!('version' in overrides)) {
-        assertEqual(test, "event.version", event.version, VALID_CONFIG.package.version);
-    }
-    if (!('target_type' in overrides)) {
-       assertEqual(test, "event.target_type", event.target_type, 'timer');
-    }
 }
 
+var tests = module.exports = {};
+
 tests['returns timer event'] = function(test) {
-    test.expect(25);
+    test.expect(22);
     var telemetry = new QuantifyTelemetryEvents(VALID_CONFIG);
     var metricsRegistry = new Quantify();
     metricsRegistry.timer("foo", {measureUnit: "some_measureUnit", rateUnit: "some_rateUnit", sampleSizeUnit: "some_sampleSizeUnit"});
@@ -98,7 +81,7 @@ tests['returns timer event'] = function(test) {
 };
 
 tests['returns timer event with metadata'] = function(test) {
-    test.expect(26);
+    test.expect(23);
     var telemetry = new QuantifyTelemetryEvents(VALID_CONFIG);
     var metricsRegistry = new Quantify();
     var metadata = {some_tag: "some_tag"};
@@ -112,36 +95,30 @@ tests['returns timer event with metadata'] = function(test) {
 };
 
 tests['returns timer event with metadata containing overrides (for default event properties)'] = function(test) {
-    test.expect(25);
+    test.expect(22);
     var telemetry = new QuantifyTelemetryEvents(VALID_CONFIG);
     var metricsRegistry = new Quantify();
-    var metadata = {version: "v0.0.0"};
+    var metadata = {type: "blah"};
     metricsRegistry.timer("foo", {measureUnit: "some_measureUnit", rateUnit: "some_rateUnit", sampleSizeUnit: "some_sampleSizeUnit"}, metadata);
     var data = metricsRegistry.getMetrics();
     var timer = data.timers.foo;
     var event = telemetry.timer("some_name", timer);
     assertBasetimerEvent(test, event, metadata);
-    assertEqual(test, "event.version", event.version, metadata.version);
+    assertEqual(test, "event.type", event.type, metadata.type);
     test.done();
 };
 
-tests["should call emit() to emit event"] = function(test) {
+tests["should call _telemetry.emit() to emit event"] = function(test) {
     test.expect(1);
-    var emitter = new events.EventEmitter();
-    emitter.emit = function() {
-        test.ok(false, "emitter.emit() should not have been called directly");
-    }
-    var telemetry = new QuantifyTelemetryEvents({
-            emitter: emitter,
-            package: {
-                name: "package-name",
-                version: "package-version"
-            }
-        });
     var emittedEvent;
-    telemetry.emit = function (event) {
-        emittedEvent = event;
-    };
+    var telemetry = new QuantifyTelemetryEvents({
+            telemetry: {
+                emit: function (event) {
+                    emittedEvent = event;
+                    return emittedEvent;
+                }
+            }
+        })
     var metricsRegistry = new Quantify();
     metricsRegistry.timer("foo", {measureUnit: "some_measureUnit", rateUnit: "some_rateUnit", sampleSizeUnit: "some_sampleSizeUnit"});
     var data = metricsRegistry.getMetrics();
