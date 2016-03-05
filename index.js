@@ -4,7 +4,7 @@ index.js: telemetry-events-quantify
 
 The MIT License (MIT)
 
-Copyright (c) 2014 Leora Pearson, Tristan Slominski
+Copyright (c) 2014-2016 Leora Pearson, Tristan Slominski
 
 Permission is hereby granted, free of charge, to any person
 obtaining a copy of this software and associated documentation
@@ -68,13 +68,8 @@ QuantifyTelemetryEvents.prototype.counter = function counter(name, c) {
         unit: c.unit,
         value: c.value
     };
-    if (c.metadata) {
-        Object.keys(c.metadata).forEach(function(key) {
-            event[key] = c.metadata[key];
-        });
-    }
 
-    return self._telemetry.emit(event);
+    return self._telemetry.emit(event, c.metadata);
 };
 
 /*
@@ -92,13 +87,8 @@ QuantifyTelemetryEvents.prototype.gauge = function gauge(name, g) {
         unit: g.unit,
         value: g.value
     };
-    if (g.metadata) {
-        Object.keys(g.metadata).forEach(function(key) {
-            event[key] = g.metadata[key];
-        });
-    }
 
-    return self._telemetry.emit(event);
+    return self._telemetry.emit(event, g.metadata);
 };
 
 /*
@@ -123,13 +113,8 @@ QuantifyTelemetryEvents.prototype.histogram = function histogram(name, h) {
         target_type: 'histogram',
         value: value
     };
-    if (h.metadata) {
-        Object.keys(h.metadata).forEach(function(key) {
-            event[key] = h.metadata[key];
-        });
-    }
 
-    return self._telemetry.emit(event);
+    return self._telemetry.emit(event, h.metadata);
 };
 
 /*
@@ -154,13 +139,8 @@ QuantifyTelemetryEvents.prototype.meter = function meter(name, m) {
         target_type: 'meter',
         value: value
     };
-    if (m.metadata) {
-        Object.keys(m.metadata).forEach(function(key) {
-            event[key] = m.metadata[key];
-        });
-    }
 
-    return self._telemetry.emit(event);
+    return self._telemetry.emit(event, m.metadata);
 };
 
 /*
@@ -207,11 +187,6 @@ QuantifyTelemetryEvents.prototype.timer = function timer(name, t) {
         target_type: 'timer',
         value: value
     };
-    if (t.metadata) {
-        Object.keys(t.metadata).forEach(function(key) {
-            event[key] = t.metadata[key];
-        });
-    }
 
-    return self._telemetry.emit(event);
+    return self._telemetry.emit(event, t.metadata);
 };

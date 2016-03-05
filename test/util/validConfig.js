@@ -1,10 +1,10 @@
 /*
 
-constructor.js - QuantifyTelemetryEvents test
+validConfig.js - Test configuration
 
 The MIT License (MIT)
 
-Copyright (c) 2014 Leora Pearson, Tristan Slominski
+Copyright (c) 2014-2016 Leora Pearson, Tristan Slominski
 
 Permission is hereby granted, free of charge, to any person
 obtaining a copy of this software and associated documentation
@@ -31,10 +31,14 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 "use strict";
 
+var events = require("events");
+var pkg = require("../../package.json");
+var TelemetryEvents = require("telemetry-events");
+
 module.exports = {
-    telemetry: {
-        emit: function(event) {
-            return event;
-        }
-    }
+    telemetry: new TelemetryEvents(
+    {
+        package: pkg,
+        emitter: new events.EventEmitter()
+    })
 };
