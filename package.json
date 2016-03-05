@@ -13,7 +13,7 @@
   },
   "dependencies": {
     "quantify": "0.7.2",
-    "telemetry-events": "0.5.0"
+    "telemetry-events": "1.0.1"
   },
   "repository": {
     "type": "git",
