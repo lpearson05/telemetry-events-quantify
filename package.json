@@ -1,6 +1,6 @@
 {
   "name": "telemetry-events-quantify",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "description": "Helper for creating telemetry events from Quantify metrics.",
   "scripts": {
     "inject-examples": "node scripts/injectExamples.js",
