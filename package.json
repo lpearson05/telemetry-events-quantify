@@ -5,15 +5,15 @@
   "scripts": {
     "inject-examples": "node scripts/injectExamples.js",
     "readme": "node examples/readme.js",
-    "test": "node scripts/test.js"
+    "test": "jest"
   },
   "main": "index.js",
   "devDependencies": {
-    "nodeunit": "0.9.x"
+    "jest": "24.9.0"
   },
   "dependencies": {
-    "quantify": "0.7.2",
-    "telemetry-events": "1.0.1"
+    "quantify": "1.0.0",
+    "telemetry-events": "2.0.0"
   },
   "repository": {
     "type": "git",

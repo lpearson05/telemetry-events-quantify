@@ -1,10 +1,10 @@
 /*
 
-validConfig.js - Test configuration
+index.test.js - QuantifyTelemetryEvents test
 
 The MIT License (MIT)
 
-Copyright (c) 2014-2016 Leora Pearson, Tristan Slominski
+Copyright (c) 2014-2019 Leora Pearson, Tristan Slominski
 
 Permission is hereby granted, free of charge, to any person
 obtaining a copy of this software and associated documentation
@@ -31,14 +31,27 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 "use strict";
 
-var events = require("events");
-var pkg = require("../../package.json");
-var TelemetryEvents = require("telemetry-events");
+const events = require("events");
+const QuantifyTelemetryEvents = require("./index.js");
+const VALID_CONFIG = require("./test/validConfig.js");
 
-module.exports = {
-    telemetry: new TelemetryEvents(
+const REQUIRED_CONFIG_PROPERTIES = ["telemetry"];
+
+it("instantiates with a valid config", () =>
     {
-        package: pkg,
-        emitter: new events.EventEmitter()
-    })
-};
+        const telemetry = new QuantifyTelemetryEvents(JSON.parse(JSON.stringify(VALID_CONFIG)));
+        expect(telemetry).toBeInstanceOf(QuantifyTelemetryEvents);
+    }
+);
+
+REQUIRED_CONFIG_PROPERTIES.map(property =>
+    {
+        it(`throws error if config is missing required property: ${property}`, () =>
+            {
+                const config = JSON.parse(JSON.stringify(VALID_CONFIG));
+                delete config[property];
+                expect(() => new QuantifyTelemetryEvents(config)).toThrow(Error);
+            }
+        );
+    }
+);
